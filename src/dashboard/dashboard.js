@@ -4,7 +4,7 @@ import React, {Component} from 'react'
 import { Menu } from 'antd'
 //COMPS
 import Settings from './settings'
-// import Inventory from './inventory'
+import Inventory from './inventory'
 // import Suppliers from './suppliers'
 //CSS
 import '../stylesheets/dashboard.css'
@@ -15,7 +15,7 @@ class Dashboard extends Component{
     constructor(props){
         super(props)
         this.state={
-            current: "suppliers"
+            current: "inventory"
         }
     }
 
@@ -31,6 +31,9 @@ class Dashboard extends Component{
             case "settings":
                 display = <Settings logout={()=>{actions.logout(this.props.setLogin)}}/>
                 break
+            case "inventory":
+                display = <Inventory />
+                break
             default:
                 display = <p>{this.state.current}</p>
                 break
@@ -40,12 +43,9 @@ class Dashboard extends Component{
                 <div>
                     <Menu style={{ width: 256 }} mode="inline" selectedKeys={[this.state.current]} onClick={this.handleMenuChange}>
                         <Menu.Item key="dashboard">Dashboard</Menu.Item>
-                        <Menu.Item key="store">Store</Menu.Item>
                         <Menu.Item key="inventory">Inventory</Menu.Item>
                         <Menu.Item key="orders">Orders</Menu.Item>
                         <Menu.Item key="deliveries">Deliveries</Menu.Item>
-                        <Menu.Item key="customers">Customers</Menu.Item>
-                        <Menu.Item key="suppliers">Suppliers</Menu.Item>
                         <Menu.Item key="sales">Sales</Menu.Item>
                         <Menu.Item key="settings">Settings</Menu.Item>
                     </Menu>

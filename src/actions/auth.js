@@ -8,7 +8,7 @@ export const logout = (setLogin) => {
 }
 
 export const authLogin = (values,btnToggle, setLogin) => {
-    axios.post(`${process.env.REACT_APP_BACKEND}/superusers/login`,values)
+    axios.post(`${process.env.REACT_APP_BACKEND}/suppliers/login`,values)
     .then(res=>{
         let token = res.data.token
         const expirationDate = new Date(new Date().getTime() + 3600*1000)

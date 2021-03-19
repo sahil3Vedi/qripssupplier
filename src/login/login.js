@@ -32,8 +32,8 @@ class Login extends Component{
             <div className="login">
                 <p className="login-title">Supplier Login</p>
                 <Form name="basic" onFinish={this.onFinish} onFinishFailed={this.onFinishFailed}>
-                    <Form.Item name="username" rules={[{ required: true, message: 'Please input your username!' }]}>
-                        <Input placeholder="Username"/>
+                    <Form.Item name="supplier_name" rules={[{ required: true, message: 'Please input your supplier name!' }]}>
+                        <Input placeholder="Supplier Name"/>
                     </Form.Item>
                     <Form.Item name="password" rules={[{ required: true, message: 'Please input your password!' }]}>
                         <Input.Password placeholder="Password"/>
