@@ -3,6 +3,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import AddProduct from '../other/addProduct'
 import QripsSpin from '../other/qripsSpin'
 import { Button, Modal } from 'antd'
+import '../stylesheets/products.css'
 
 class Inventory extends Component{
     constructor(props){
