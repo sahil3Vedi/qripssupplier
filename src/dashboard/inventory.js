@@ -2,7 +2,8 @@ import React, {Component} from 'react'
 import { PlusOutlined } from '@ant-design/icons'
 import AddProduct from '../other/addProduct'
 import QripsSpin from '../other/qripsSpin'
-import { Button, Modal } from 'antd'
+import { Button, Modal, Table } from 'antd'
+import axios from 'axios'
 import '../stylesheets/products.css'
 
 class Inventory extends Component{
@@ -23,8 +24,16 @@ class Inventory extends Component{
 
     fetchProducts = () => {
         this.setState({
-            loading_suppliers: true,
-            loading_products: false
+            loading_products: true
+        }, () => {
+            const config = { headers: { 'x-auth-token': localStorage.getItem('token') } }
+            axios.get(`${process.env.REACT_APP_BACKEND}/products`, config)
+            .then(res => {
+                this.setState({
+                    products: res.data,
+                    loading_products: false
+                })
+            })
         })
     }
 
@@ -54,12 +63,38 @@ class Inventory extends Component{
             <AddProduct fetchProducts={this.fetchProducts} toggleModal={this.toggleAddProductModal}/>
         </Modal>
 
+        //DISPLAY PRODUCTS
+        const product_columns = [
+            {
+                title: 'Name',
+                dataIndex: 'supplier_name',
+                key: 'supplier_name'
+            },
+            {
+                title: 'Company',
+                dataIndex: 'supplier_company',
+                key: 'supplier_company'
+            },
+            {
+                title: 'Unit Price',
+                dataIndex: 'supplier_unit_price',
+                key: 'supplier_unit_price'
+            },
+            {
+                title: 'Quantity',
+                dataIndex: 'qty',
+                key: 'qty'
+            }
+        ]
+
+        let products = <div className="display-suppliers">{this.state.loading_products ? <QripsSpin/> : <Table rowKey={"supplier_name"} columns={product_columns} dataSource={this.state.products}/>}</div>
 
         return (
             <div>
                 {add_product_modal}
                 <p className="workspace-title">Inventory</p>
                 <Button type="primary" icon={<PlusOutlined/>} onClick={this.toggleAddProductModal}>Add Product</Button>
+                {products}
             </div>
         )
     }

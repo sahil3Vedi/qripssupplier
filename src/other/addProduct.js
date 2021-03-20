@@ -50,31 +50,31 @@ class AddProduct extends Component {
 
     addProduct = () => {
         this.toggleAddingProduct()
-        let supplier = this.state.supplier
         let { basic_details, storage_details } = this.state
         let { supplier_name, supplier_company, supplier_description } = basic_details
         let { expiry, mfd, product_id_type, product_id, supplier_unit_price, qty } = storage_details
         let expiry_date = moment(expiry).format("DD-MMM-YYYY")
         let mfg_date = moment(mfd).format("DD-MMM-YYYY")
         // Manip supplier_img
-        let supplier_img = this.state.product_img
+        let supplier_images = this.state.product_img.map(d=>d.url)
         let formData = {
             supplier_name, supplier_company, supplier_description, supplier_unit_price, qty,
             mfg_date, expiry_date, product_id_type, product_id,
-            supplier_img
+            supplier_images
         }
         console.log(formData)
-        // const config = {headers:{'x-auth-token':localStorage.getItem('token')}}
-        // axios.post(`${process.env.REACT_APP_BACKEND}/products`,formData,config)
-        // .then(res=>{
-        //     this.toggleAddingProduct()
-        //     this.props.fetchProducts()
-        //     this.props.toggleModal()
-        // })
-        // .catch(err=>{
-        //     console.log(err)
-        //     this.toggleAddingProduct()
-        // })
+        const config = {headers:{'x-auth-token':localStorage.getItem('token')}}
+        axios.post(`${process.env.REACT_APP_BACKEND}/products`,formData,config)
+        .then(res=>{
+            console.log(res.data)
+            this.toggleAddingProduct()
+            this.props.fetchProducts()
+            this.props.toggleModal()
+        })
+        .catch(err=>{
+            console.log(err)
+            this.toggleAddingProduct()
+        })
     }
 
     toggleProductImgUploading = () => {
