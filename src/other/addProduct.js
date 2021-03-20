@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Form, Input, Steps, Space, Upload, message, Modal } from 'antd'
-import { UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
+import { UploadOutlined, EyeOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons'
 import axios from 'axios'
 import FileViewer from 'react-file-viewer'
 
@@ -12,7 +12,7 @@ class AddProduct extends Component {
         this.state = {
             supplier: "Sahil Traders",//integrate with login API
             current_add_product_stage: 0,
-            product_img: {},
+            product_img: [],
             view_file: {},
             basic_details: {},
             storage_details: {},
@@ -29,6 +29,7 @@ class AddProduct extends Component {
     }
 
     updateBasicDetails = (values) => {
+        console.log(values)
         this.setState({
             basic_details: values
         }, () => {
@@ -50,12 +51,12 @@ class AddProduct extends Component {
         let { basic_details, storage_details } = this.state
         let { supplier_name, supplier_company, supplier_description, supplier_unit_price, qty } = basic_details
         let { expiry, mfd, product_id_type, product_id } = storage_details
-        let supplier_image_url = this.state.product_img.url
-        let supplier_image_name = this.state.product_img.name
+        // Manip supplier_img
+        let supplier_img = this.state.product_img
         let formData = {
             supplier_name, supplier_company, supplier_description, supplier_unit_price, qty,
             expiry, mfd, product_id_type, product_id,
-            supplier_image_url, supplier_image_name
+            supplier_img
         }
         console.log(formData)
         // const config = {headers:{'x-auth-token':localStorage.getItem('token')}}
@@ -103,6 +104,24 @@ class AddProduct extends Component {
         })
     }
 
+    onPreview = (file) => {
+        for (var img in this.state.product_img){
+            if (file.uid===this.state.product_img[img].uid){
+                this.setViewUrl(this.state.product_img[img])
+            }
+        }
+    }
+
+    onRemove = (file) => {
+        let temp_img = []
+        for (var img in this.state.product_img){
+            if (file.uid!==this.state.product_img[img].uid){
+                temp_img.push(this.state.product_img[img])
+            }
+        }
+        this.setState({product_img: temp_img})
+    }
+
     render() {
         // View File Modal
         let view_file_modal = <Modal destroyOnClose centered width="35%" closable={true} onCancel={this.toggleViewFileModal} visible={this.state.view_file_modal_visible} footer={null}>
@@ -126,11 +145,14 @@ class AddProduct extends Component {
                     formData.append("upload_preset", "msiuxpoc")
                     axios.post("https://api.cloudinary.com/v1_1/dxti6efrg/image/upload", formData)
                         .then(res => {
+                            let product_img = this.state.product_img
+                            product_img.push({
+                                url: res.data.secure_url,
+                                name: `${res.data.public_id.split('/')[1]}.${res.data.format}`,
+                                uid: file.uid
+                            })
                             this.setState({
-                                product_img: {
-                                    url: res.data.secure_url,
-                                    name: `${res.data.public_id.split('/')[1]}.${res.data.format}`
-                                }
+                                    product_img
                             }, () => {
                                 this.toggleProductImgUploading()
                             })
@@ -138,12 +160,17 @@ class AddProduct extends Component {
                 }
                 return false;
             },
+            loading:true,
+            listType:"picture-card",
             multiple: false,
-            showUploadList: false,
-            accept: ".png,.jpg"
+            showUploadList: true,
+            accept: ".png,.jpg",
+            onPreview: this.onPreview,
+            onRemove: this.onRemove,
+            defaultFileList: this.state.basic_details.img_upload ? this.state.basic_details.img_upload.fileList : []
         }
 
-        //Basic Form: supplier_name, supplier_company, supplier_description, supplier_unit_price, qty 
+        //Basic Form: supplier_name, supplier_company, supplier_description, supplier_unit_price, qty
         let basic_form = (
             <Form name="add_basics" onFinish={this.updateBasicDetails} initialValues={this.state.basic_details}>
                 <p className="modal-subtitle">Basic Details</p>
@@ -156,18 +183,9 @@ class AddProduct extends Component {
                 <Form.Item name="supplier_description" rules={[{ required: true, message: 'Please enter Product Description' }]}>
                     <Input placeholder="Product Description" />
                 </Form.Item>
-                {
-                    this.state.product_img.url ?
-                    <div className="view-file">
-                        <div><Button icon={<EyeOutlined/>} onClick={()=>{this.setViewUrl(this.state.product_img)}}/></div>
-                        <div><p>{`${this.state.product_img.name} Uploaded`}</p></div>
-                        <div><Button icon={<DeleteOutlined/>} type="danger" onClick={this.deleteProductImg}/></div>
-                    </div>
-                    :
-                    <Form.Item>
-                        <Upload {...product_img_upload_props}><Button loading={this.state.product_img_uploading} icon={<UploadOutlined/>}>Upload Product Image</Button></Upload>
-                    </Form.Item>
-                }
+                <Form.Item name="img_upload">
+                    <Upload {...product_img_upload_props}>{this.state.product_img_uploading ? <LoadingOutlined spin /> : <UploadOutlined/>}</Upload>
+                </Form.Item>
                 <div className="supplier-form-2">
                     <Form.Item name="supplier_unit_price" rules={[{ required: true, message: 'Please enter Supplier Unit Price' }]}>
                         <Input placeholder="Supplier Unit Price" />
@@ -177,7 +195,7 @@ class AddProduct extends Component {
                     </Form.Item>
                     <Space>
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" disabled={!this.state.product_img.url}>Next</Button>
+                            <Button type="primary" htmlType="submit" disabled={!this.state.product_img.length}>Next</Button>
                         </Form.Item>
                     </Space>
                 </div>
@@ -221,7 +239,7 @@ class AddProduct extends Component {
                     <div><p><b>Description</b></p><p>{this.state.basic_details.supplier_description}</p></div>
                     <div><p><b>Supplier Unit Price</b></p><p>{this.state.basic_details.supplier_unit_price}</p></div>
                     <div><p><b>Quantity</b></p><p>{this.state.basic_details.qty}</p></div>
-                    <div><p><b>Product Image</b></p><p>{this.state.product_img.name}</p></div>
+                    // Add Product Images
                 </div>
                 <p className="modal-subtitle">POC Details</p>
                 <div className="supplier-form-2">
@@ -237,6 +255,7 @@ class AddProduct extends Component {
             </div>
         )
 
+        console.log(this.state.product_img)
 
         return (
             <div>
