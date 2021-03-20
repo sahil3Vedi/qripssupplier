@@ -49,8 +49,8 @@ class AddProduct extends Component {
         this.toggleAddingProduct()
         let supplier = this.state.supplier
         let { basic_details, storage_details } = this.state
-        let { supplier_name, supplier_company, supplier_description, supplier_unit_price, qty } = basic_details
-        let { expiry, mfd, product_id_type, product_id } = storage_details
+        let { supplier_name, supplier_company, supplier_description } = basic_details
+        let { expiry, mfd, product_id_type, product_id, supplier_unit_price, qty } = storage_details
         // Manip supplier_img
         let supplier_img = this.state.product_img
         let formData = {
@@ -160,6 +160,7 @@ class AddProduct extends Component {
                 }
                 return false;
             },
+            valuePropName: 'fileList',
             loading:true,
             listType:"picture-card",
             multiple: false,
@@ -183,22 +184,15 @@ class AddProduct extends Component {
                 <Form.Item name="supplier_description" rules={[{ required: true, message: 'Please enter Product Description' }]}>
                     <Input placeholder="Product Description" />
                 </Form.Item>
+                <p className="modal-subtitle">Product Images</p>
                 <Form.Item name="img_upload">
                     <Upload {...product_img_upload_props}>{this.state.product_img_uploading ? <LoadingOutlined spin /> : <UploadOutlined/>}</Upload>
                 </Form.Item>
-                <div className="supplier-form-2">
-                    <Form.Item name="supplier_unit_price" rules={[{ required: true, message: 'Please enter Supplier Unit Price' }]}>
-                        <Input placeholder="Supplier Unit Price" />
+                <Space>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" disabled={!this.state.product_img.length}>Next</Button>
                     </Form.Item>
-                    <Form.Item name="qty" rules={[{ required: true, message: 'Please enter Product Quantity' }]}>
-                        <Input placeholder="Quantity" />
-                    </Form.Item>
-                    <Space>
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit" disabled={!this.state.product_img.length}>Next</Button>
-                        </Form.Item>
-                    </Space>
-                </div>
+                </Space>
             </Form>
         )
 
@@ -218,6 +212,14 @@ class AddProduct extends Component {
                 <Form.Item name="product_id" rules={[{ required: true, message: 'Please enter Product ID Type' }]}>
                     <Input placeholder="Product ID"/>
                 </Form.Item>
+                <div className="supplier-form-2">
+                    <Form.Item name="supplier_unit_price" rules={[{ required: true, message: 'Please enter Supplier Unit Price' }]}>
+                        <Input placeholder="Supplier Unit Price" />
+                    </Form.Item>
+                    <Form.Item name="qty" rules={[{ required: true, message: 'Please enter Product Quantity' }]}>
+                        <Input placeholder="Quantity" />
+                    </Form.Item>
+                </div>
                 <Space>
                     <Form.Item>
                         <Button type="danger" onClick={()=>{this.setAddProductStage(0)}}>Back</Button>
@@ -234,19 +236,26 @@ class AddProduct extends Component {
             <div>
                 <p className="modal-subtitle">Basic Details</p>
                 <div className="supplier-form-2">
-                    <div><p><b>Name</b></p><p>{this.state.basic_details.supplier_name}</p></div>
-                    <div><p><b>Company</b></p><p>{this.state.basic_details.supplier_company}</p></div>
-                    <div><p><b>Description</b></p><p>{this.state.basic_details.supplier_description}</p></div>
-                    <div><p><b>Supplier Unit Price</b></p><p>{this.state.basic_details.supplier_unit_price}</p></div>
-                    <div><p><b>Quantity</b></p><p>{this.state.basic_details.qty}</p></div>
-                    // Add Product Images
+                    <div><p className="attribute-key"><b>Name</b></p><p className="attribute-value">{this.state.basic_details.supplier_name}</p></div>
+                    <div><p className="attribute-key"><b>Company</b></p><p className="attribute-value">{this.state.basic_details.supplier_company}</p></div>
                 </div>
-                <p className="modal-subtitle">POC Details</p>
+                <div><p className="attribute-key"><b>Description</b></p><p className="attribute-value">{this.state.basic_details.supplier_description}</p></div>
+                <p className="modal-subtitle">Product Images</p>
+                <div className="view-uploaded-images">
+                    {
+                        this.state.product_img.map(d=><div key={d.url}>
+                            <img className="uploaded-image" src={d.url} alt=""/>
+                        </div>)
+                    }
+                </div>
+                <p className="modal-subtitle">Storage Details</p>
                 <div className="supplier-form-2">
-                    <div><p><b>Expiration Date</b></p><p>{this.state.storage_details.expiry}</p></div>
-                    <div><p><b>Manufacturing Date</b></p><p>{this.state.storage_details.mfd}</p></div>
-                    <div><p><b>Product ID Type</b></p><p>{this.state.storage_details.product_id_type}</p></div>
-                    <div><p><b>Product ID</b></p><p>{this.state.storage_details.product_id}</p></div>
+                    <div><p className="attribute-key"><b>Supplier Unit Price</b></p><p className="attribute-value">{this.state.storage_details.supplier_unit_price}</p></div>
+                    <div><p className="attribute-key"><b>Quantity</b></p><p className="attribute-value">{this.state.storage_details.qty}</p></div>
+                    <div><p className="attribute-key"><b>Expiration Date</b></p><p className="attribute-value">{this.state.storage_details.expiry}</p></div>
+                    <div><p className="attribute-key"><b>Manufacturing Date</b></p><p className="attribute-value">{this.state.storage_details.mfd}</p></div>
+                    <div><p className="attribute-key"><b>Product ID Type</b></p><p className="attribute-value">{this.state.storage_details.product_id_type}</p></div>
+                    <div><p className="attribute-key"><b>Product ID</b></p><p className="attribute-value">{this.state.storage_details.product_id}</p></div>
                 </div>
                 <Space>
                     <Button type="danger" onClick={()=>{this.setAddProductStage(1)}}>Back</Button>
@@ -254,8 +263,6 @@ class AddProduct extends Component {
                 </Space>
             </div>
         )
-
-        console.log(this.state.product_img)
 
         return (
             <div>
