@@ -50,7 +50,7 @@ class Inventory extends Component{
 
     render(){
         //ADD PRODUCT MODAL
-        let add_product_modal = <Modal maskClosable={false} destroyOnClose width="35%" title="Add Product" visible={this.state.add_product_modal_visible} footer={null} onCancel={this.toggleAddProductModal}>
+        let add_product_modal = <Modal centered maskClosable={false} destroyOnClose width="35%" title="Add Product" visible={this.state.add_product_modal_visible} footer={null} onCancel={this.toggleAddProductModal}>
             <AddProduct fetchProducts={this.fetchProducts} toggleModal={this.toggleAddProductModal}/>
         </Modal>
 

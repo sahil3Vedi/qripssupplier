@@ -1,10 +1,14 @@
 import React, { Component } from 'react'
-import { Button, Form, Input, Steps, Space, Upload, message, Modal } from 'antd'
-import { UploadOutlined, EyeOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Button, Form, Input, Steps, Space, Upload, message, Modal, Select, DatePicker, InputNumber } from 'antd'
+import { UploadOutlined, LoadingOutlined } from '@ant-design/icons'
+import moment from 'moment'
 import axios from 'axios'
 import FileViewer from 'react-file-viewer'
 
 const { Step } = Steps
+const { TextArea } = Input
+const { Option } = Select
+const dateFormat = "DD-MMM-YYYY"
 
 class AddProduct extends Component {
     constructor(props) {
@@ -15,7 +19,7 @@ class AddProduct extends Component {
             product_img: [],
             view_file: {},
             basic_details: {},
-            storage_details: {},
+            storage_details: {"supplier_unit_price":100,"qty":5},
             product_img_uploading: false,
             view_file_modal_visible: false,
             adding_product: false,
@@ -29,7 +33,6 @@ class AddProduct extends Component {
     }
 
     updateBasicDetails = (values) => {
-        console.log(values)
         this.setState({
             basic_details: values
         }, () => {
@@ -51,11 +54,13 @@ class AddProduct extends Component {
         let { basic_details, storage_details } = this.state
         let { supplier_name, supplier_company, supplier_description } = basic_details
         let { expiry, mfd, product_id_type, product_id, supplier_unit_price, qty } = storage_details
+        let expiry_date = moment(expiry).format("DD-MMM-YYYY")
+        let mfg_date = moment(mfd).format("DD-MMM-YYYY")
         // Manip supplier_img
         let supplier_img = this.state.product_img
         let formData = {
             supplier_name, supplier_company, supplier_description, supplier_unit_price, qty,
-            expiry, mfd, product_id_type, product_id,
+            mfg_date, expiry_date, product_id_type, product_id,
             supplier_img
         }
         console.log(formData)
@@ -122,6 +127,17 @@ class AddProduct extends Component {
         this.setState({product_img: temp_img})
     }
 
+    disabledExpirationDate = (current) => {
+        // Can not select days before today and today
+        return current && current < moment().endOf('day');
+    }
+
+    disabledMfgDate = (current) => {
+        // Can not select days after today and today
+        return current && current > moment().endOf('day');
+    }
+
+
     render() {
         // View File Modal
         let view_file_modal = <Modal destroyOnClose centered width="35%" closable={true} onCancel={this.toggleViewFileModal} visible={this.state.view_file_modal_visible} footer={null}>
@@ -160,7 +176,6 @@ class AddProduct extends Component {
                 }
                 return false;
             },
-            valuePropName: 'fileList',
             loading:true,
             listType:"picture-card",
             multiple: false,
@@ -182,7 +197,7 @@ class AddProduct extends Component {
                     <Input placeholder="Product Company" />
                 </Form.Item>
                 <Form.Item name="supplier_description" rules={[{ required: true, message: 'Please enter Product Description' }]}>
-                    <Input placeholder="Product Description" />
+                    <TextArea rows={4} placeholder="Product Description" />
                 </Form.Item>
                 <p className="modal-subtitle">Product Images</p>
                 <Form.Item name="img_upload">
@@ -200,24 +215,30 @@ class AddProduct extends Component {
         let storage_form = (
             <Form name="add_storage" onFinish={this.updateStorageDetails} initialValues={this.state.storage_details}>
                 <p className="modal-subtitle">Storage Details</p>
-                <Form.Item name="expiry" rules={[{ required: true, message: 'Please enter Expiration Date' }]}>
-                    <Input placeholder="Expiration Date"/>
-                </Form.Item>
-                <Form.Item name="mfd" rules={[{ required: true, message: 'Please enter Manufacturing Date' }]}>
-                    <Input placeholder="Manufacturing Date"/>
-                </Form.Item>
-                <Form.Item name="product_id_type" rules={[{ required: true, message: 'Please select Product ID Type' }]}>
-                    <Input placeholder="Product ID Type"/>
-                </Form.Item>
-                <Form.Item name="product_id" rules={[{ required: true, message: 'Please enter Product ID Type' }]}>
-                    <Input placeholder="Product ID"/>
-                </Form.Item>
                 <div className="supplier-form-2">
+                    <Form.Item name="mfd" rules={[{ required: true, message: 'Please select Manufacturing Date' }]}>
+                        <DatePicker  disabledDate={this.disabledMfgDate} format={dateFormat} placeholder="Manufacturing Date"/>
+                    </Form.Item>
+                    <Form.Item name="expiry" rules={[{ required: true, message: 'Please select Expiration Date' }]}>
+                        <DatePicker format={dateFormat} disabledDate={this.disabledExpirationDate} placeholder="Expiration Date"/>
+                    </Form.Item>
+                    <Form.Item name="product_id_type" rules={[{ required: true, message: 'Please select Product ID Type' }]}>
+                        <Select placeholder="Product ID Type">
+                            <Option value="EAN-13">EAN-13</Option>
+                            <Option value="EAN-8">EAN-8</Option>
+                            <Option value="UPC-E">UPC-E</Option>
+                            <Option value="GTIN">GTIN</Option>
+                            <Option value="UPC-A">UPC-A</Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="product_id" rules={[{ required: true, message: 'Please enter Product ID' }]}>
+                        <Input placeholder="Product ID"/>
+                    </Form.Item>
                     <Form.Item name="supplier_unit_price" rules={[{ required: true, message: 'Please enter Supplier Unit Price' }]}>
-                        <Input placeholder="Supplier Unit Price" />
+                        <InputNumber precision={0} placeholder="Supplier Unit Price" min={100} max={1500} formatter={value => `₹ ${value}`} step={10} parser={value => value.replace('₹ ', '')}/>
                     </Form.Item>
                     <Form.Item name="qty" rules={[{ required: true, message: 'Please enter Product Quantity' }]}>
-                        <Input placeholder="Quantity" />
+                        <InputNumber precision={0} placeholder="Quantity" min={5} max={100} formatter={value => `${value} Units`} step={5} parser={value => value.replace(' Units', '')}/>
                     </Form.Item>
                 </div>
                 <Space>
@@ -250,10 +271,10 @@ class AddProduct extends Component {
                 </div>
                 <p className="modal-subtitle">Storage Details</p>
                 <div className="supplier-form-2">
-                    <div><p className="attribute-key"><b>Supplier Unit Price</b></p><p className="attribute-value">{this.state.storage_details.supplier_unit_price}</p></div>
-                    <div><p className="attribute-key"><b>Quantity</b></p><p className="attribute-value">{this.state.storage_details.qty}</p></div>
-                    <div><p className="attribute-key"><b>Expiration Date</b></p><p className="attribute-value">{this.state.storage_details.expiry}</p></div>
-                    <div><p className="attribute-key"><b>Manufacturing Date</b></p><p className="attribute-value">{this.state.storage_details.mfd}</p></div>
+                    <div><p className="attribute-key"><b>Supplier Unit Price</b></p><p className="attribute-value">{`₹ ${this.state.storage_details.supplier_unit_price}`}</p></div>
+                    <div><p className="attribute-key"><b>Quantity</b></p><p className="attribute-value">{`${this.state.storage_details.qty} Units`}</p></div>
+                    <div><p className="attribute-key"><b>Expiration Date</b></p><p className="attribute-value">{moment(this.state.storage_details.expiry).format("DD-MMM-YYYY")}</p></div>
+                    <div><p className="attribute-key"><b>Manufacturing Date</b></p><p className="attribute-value">{moment(this.state.storage_details.mfd).format("DD-MM-YYYY")}</p></div>
                     <div><p className="attribute-key"><b>Product ID Type</b></p><p className="attribute-value">{this.state.storage_details.product_id_type}</p></div>
                     <div><p className="attribute-key"><b>Product ID</b></p><p className="attribute-value">{this.state.storage_details.product_id}</p></div>
                 </div>

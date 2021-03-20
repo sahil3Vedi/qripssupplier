@@ -16,6 +16,20 @@
     border-radius: 10px!important;
 }
 
+.ant-picker{
+    border-radius: 10px!important;
+    width: 100%!important;
+}
+
+.ant-picker-panel-container{
+    border-radius: 10px!important;
+}
+
+.ant-input-number{
+    width:100% !important;
+    border-radius: 10px!important;
+}
+
 /*MODALS*/
 
 .ant-modal-content, .ant-modal-header{
