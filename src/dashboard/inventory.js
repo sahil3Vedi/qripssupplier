@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import { PlusOutlined } from '@ant-design/icons'
+import { Button, Modal, Table, Space } from 'antd'
+import { PlusOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
 import AddProduct from '../other/addProduct'
+import ViewProduct from '../other/viewProduct'
 import QripsSpin from '../other/qripsSpin'
-import { Button, Modal, Table } from 'antd'
 import axios from 'axios'
 import '../stylesheets/products.css'
 
@@ -63,10 +64,15 @@ class Inventory extends Component{
             <AddProduct fetchProducts={this.fetchProducts} toggleModal={this.toggleAddProductModal}/>
         </Modal>
 
+        //VIEW PRODUCT MODAL
+        let view_product_modal = <Modal destroyOnClose width="35%" title="View Product" visible={this.state.view_product_modal_visible} footer={null} onCancel={this.toggleViewProductModal}>
+            <ViewProduct data={this.state.productData}/>
+        </Modal>
+
         //DISPLAY PRODUCTS
         const product_columns = [
             {
-                title: 'Name',
+                title: 'Product Name',
                 dataIndex: 'supplier_name',
                 key: 'supplier_name'
             },
@@ -84,14 +90,46 @@ class Inventory extends Component{
                 title: 'Quantity',
                 dataIndex: 'qty',
                 key: 'qty'
+            },
+            {
+                title: 'Manufactured',
+                dataIndex: 'mfg_date',
+                key: 'mfg_date'
+            },
+            {
+                title: 'Expiring',
+                dataIndex: 'expiry_date',
+                key: 'expiry_date'
+            },
+            {
+                title: 'Status',
+                dataIndex: 'approved',
+                key: 'approved',
+                render: text => (
+                    text ? <p style={{color:"green",margin:0}}>Approved</p> : <p style={{color:"orange",margin:0}}>Not Approved</p>
+                )
+            },
+            {
+                title:'',
+                dataIndex:'',
+                keyIndex:'',
+                render: (text,record) => (
+                    <Space>
+                        <Button icon={<EyeOutlined/>} onClick={()=>this.viewProductDetails(record)}/>
+                        <Button icon={<DeleteOutlined/>} type="danger"/>
+                    </Space>
+                )
             }
         ]
+
+        console.log(this.state.products)
 
         let products = <div className="display-suppliers">{this.state.loading_products ? <QripsSpin/> : <Table rowKey={"supplier_name"} columns={product_columns} dataSource={this.state.products}/>}</div>
 
         return (
             <div>
                 {add_product_modal}
+                {view_product_modal}
                 <p className="workspace-title">Inventory</p>
                 <Button type="primary" icon={<PlusOutlined/>} onClick={this.toggleAddProductModal}>Add Product</Button>
                 {products}
