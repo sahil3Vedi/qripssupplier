@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
 import { Button, Modal, Table, Space } from 'antd'
-import { PlusOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, EyeOutlined, SettingOutlined } from '@ant-design/icons'
 import AddProduct from '../other/addProduct'
 import ViewProduct from '../other/viewProduct'
+import ProductSettings from '../other/productSettings'
 import QripsSpin from '../other/qripsSpin'
 import axios from 'axios'
 import '../stylesheets/products.css'
@@ -16,6 +17,8 @@ class Inventory extends Component{
             loading_products: true,
             productData:null,
             view_product_modal_visible: false,
+            product_settings_modal_visible: false,
+            pullingProduct: false,
         }
     }
 
@@ -50,11 +53,31 @@ class Inventory extends Component{
         }))
     }
 
+    toggleViewProductSettingsModal = () => {
+        this.setState(prevState=>({
+            product_settings_modal_visible: !prevState.product_settings_modal_visible
+        }))
+    }
+
+    togglePullingProduct = () => {
+        this.setState(prevState=>({
+            pulling_product: !prevState.pulling_product
+        }))
+    }
+
     viewProductDetails = (record) => {
         this.setState({
             productData: record
         },()=>{
             this.toggleViewProductModal()
+        })
+    }
+
+    viewProductSettings = (record) => {
+        this.setState({
+            productData: record
+        },()=>{
+            this.toggleViewProductSettingsModal()
         })
     }
 
@@ -67,6 +90,11 @@ class Inventory extends Component{
         //VIEW PRODUCT MODAL
         let view_product_modal = <Modal destroyOnClose width="35%" title="View Product" visible={this.state.view_product_modal_visible} footer={null} onCancel={this.toggleViewProductModal}>
             <ViewProduct data={this.state.productData}/>
+        </Modal>
+
+        //PRODUCT SETTINGS MODAL
+        let product_settings_modal = <Modal destroyOnClose centered width="35%" title="Product Settings" visible={this.state.product_settings_modal_visible} footer={null} onCancel={this.toggleViewProductSettingsModal}>
+            <ProductSettings togglePullingProduct={this.togglePullingProduct} pullingProduct={this.state.pulling_product} data={this.state.productData} fetchProducts={this.fetchProducts} toggleModal={this.toggleViewProductSettingsModal}/>
         </Modal>
 
         //DISPLAY PRODUCTS
@@ -106,7 +134,7 @@ class Inventory extends Component{
                 dataIndex: 'approved',
                 key: 'approved',
                 render: text => (
-                    text ? <p style={{color:"green",margin:0}}>Approved</p> : <p style={{color:"orange",margin:0}}>Not Approved</p>
+                    text ? <p style={{color:"lime",margin:0}}>Approved</p> : <p style={{color:"orange",margin:0}}>Not Approved</p>
                 )
             },
             {
@@ -116,7 +144,7 @@ class Inventory extends Component{
                 render: (text,record) => (
                     <Space>
                         <Button icon={<EyeOutlined/>} onClick={()=>this.viewProductDetails(record)}/>
-                        <Button icon={<DeleteOutlined/>} type="danger"/>
+                        <Button icon={<SettingOutlined/>} onClick={()=>this.viewProductSettings(record)}/>
                     </Space>
                 )
             }
@@ -130,6 +158,7 @@ class Inventory extends Component{
             <div>
                 {add_product_modal}
                 {view_product_modal}
+                {product_settings_modal}
                 <p className="workspace-title">Inventory</p>
                 <Button type="primary" icon={<PlusOutlined/>} onClick={this.toggleAddProductModal}>Add Product</Button>
                 {products}
