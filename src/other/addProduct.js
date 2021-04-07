@@ -19,7 +19,7 @@ class AddProduct extends Component {
             product_img: [],
             view_file: {},
             basic_details: {},
-            storage_details: {"supplier_unit_price":100,"qty":5},
+            storage_details: {"supplier_unit_price":100,"qty":5,"supplier_unit_quantity_type":"g","supplier_unit_quantity":100},
             product_img_uploading: false,
             view_file_modal_visible: false,
             adding_product: false,
@@ -52,13 +52,13 @@ class AddProduct extends Component {
         this.toggleAddingProduct()
         let { basic_details, storage_details } = this.state
         let { supplier_name, supplier_company, supplier_description } = basic_details
-        let { expiry, mfd, product_id_type, product_id, supplier_unit_price, qty } = storage_details
+        let { expiry, mfd, product_id_type, product_id, supplier_unit_price, qty, supplier_unit_quantity_type, supplier_unit_quantity } = storage_details
         let expiry_date = moment(expiry).format("DD-MMM-YYYY")
         let mfg_date = moment(mfd).format("DD-MMM-YYYY")
         // Manip supplier_img
         let supplier_images = this.state.product_img.map(d=>d.url)
         let formData = {
-            supplier_name, supplier_company, supplier_description, supplier_unit_price, qty,
+            supplier_name, supplier_company, supplier_description, supplier_unit_price, qty, supplier_unit_quantity, supplier_unit_quantity_type,
             mfg_date, expiry_date, product_id_type, product_id,
             supplier_images
         }
@@ -137,6 +137,16 @@ class AddProduct extends Component {
         return current && current > moment().endOf('day');
     }
 
+    setContentQtyType = (value) => {
+        let storage_details = this.state.storage_details
+        storage_details.supplier_unit_quantity_type = value
+        storage_details.supplier_unit_quantity = (value==="ml" || value==="g") ? 100 : 1
+        console.log(value)
+        this.setState({
+            storage_details,
+        })
+    }
+
 
     render() {
         // View File Modal
@@ -211,11 +221,24 @@ class AddProduct extends Component {
             </Form>
         )
 
+        let inc_flag = (this.state.storage_details.supplier_unit_quantity_type==="ml" || this.state.storage_details.supplier_unit_quantity_type==="g")
+
         //Storage Form: expiry, mfd, product_id_type, product_id
         let storage_form = (
-            <Form name="add_storage" onFinish={this.updateStorageDetails} initialValues={this.state.storage_details}>
+            <Form name="add_storage" key={`${this.state.storage_details.supplier_unit_quantity_type}`} onFinish={this.updateStorageDetails} initialValues={this.state.storage_details}>
                 <p className="modal-subtitle">Storage Details</p>
                 <div className="supplier-form-2">
+                    <Form.Item name="supplier_unit_quantity_type" rules={[{ required: true, message: 'Please select Content Quantity Unit' }]}>
+                        <Select placeholder="Content Quantity Unit" onChange={this.setContentQtyType}>
+                            <Option value="ml">millilitres (ml)</Option>
+                            <Option value="L">Litres (L)</Option>
+                            <Option value="g">grams (g)</Option>
+                            <Option value="kg">kilograms(kg)</Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="supplier_unit_quantity" rules={[{ required: true, message: 'Please select Content Quantity' }]}>
+                        <InputNumber precision={0} placeholder="Content Quantity" min={inc_flag ? 100 : 1} max={inc_flag ? 999 : 5} formatter={value => `${value} ${this.state.storage_details.supplier_unit_quantity_type}`} step={inc_flag ? 10 : 0.05} parser={value => value.replace(` ${this.state.storage_details.supplier_unit_quantity_type}`, '')}/>
+                    </Form.Item>
                     <Form.Item name="mfd" rules={[{ required: true, message: 'Please select Manufacturing Date' }]}>
                         <DatePicker  disabledDate={this.disabledMfgDate} format={dateFormat} placeholder="Manufacturing Date"/>
                     </Form.Item>
@@ -271,6 +294,8 @@ class AddProduct extends Component {
                 </div>
                 <p className="modal-subtitle">Storage Details</p>
                 <div className="supplier-form-2">
+                    <div><p className="attribute-key"><b>Content Unit Quantity</b></p><p className="attribute-value">{`${this.state.storage_details.supplier_unit_quantity} ${this.state.storage_details.supplier_unit_quantity_type}`}</p></div>
+                    <div></div>
                     <div><p className="attribute-key"><b>Supplier Unit Price</b></p><p className="attribute-value">{`₹ ${this.state.storage_details.supplier_unit_price}`}</p></div>
                     <div><p className="attribute-key"><b>Quantity</b></p><p className="attribute-value">{`${this.state.storage_details.qty} Units`}</p></div>
                     <div><p className="attribute-key"><b>Expiration Date</b></p><p className="attribute-value">{moment(this.state.storage_details.expiry).format("DD-MMM-YYYY")}</p></div>
