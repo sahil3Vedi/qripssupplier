@@ -190,7 +190,7 @@ class AddProduct extends Component {
             listType:"picture-card",
             multiple: false,
             showUploadList: true,
-            accept: ".png,.jpg",
+            accept: ".svg",
             onPreview: this.onPreview,
             onRemove: this.onRemove,
             defaultFileList: this.state.basic_details.img_upload ? this.state.basic_details.img_upload.fileList : []
